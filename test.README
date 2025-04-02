@@ -1,0 +1,14 @@
+./kafka-topics.sh --bootstrap-server localhost:9091 --topic input-topic --create --partitions 9 --replication-factor 2
+
+./kafka-topics.sh --bootstrap-server localhost:9091 --topic output-topic --create --partitions 9 --replication-factor 2
+
+
+./kafka-console-producer.sh --bootstrap-server localhost:9091 --topic input-topic --property parse.key=true --property key.separator=,
+./kafka-producer-perf-test.sh --topic input-topic --num-records 200000 --record-size 1000 --throughput 10000000 --producer-props bootstrap.servers=localhost:9091
+
+java -jar target/processor-api-stdout-app-1.0-SNAPSHOT-shaded.jar client-1 rack-1
+java -jar target/processor-api-stdout-app-1.0-SNAPSHOT-shaded.jar client-2 rack-2
+java -jar target/processor-api-stdout-app-1.0-SNAPSHOT-shaded.jar client-3 rack-3
+
+./kafka-console-consumer.sh --bootstrap-server localhost:9091 --topic output-topic
+

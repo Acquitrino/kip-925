@@ -1,0 +1,182 @@
+---
+services:
+    zookeeper-1:
+        image: confluentinc/cp-zookeeper:7.9.0
+        hostname: zookeeper-1
+        container_name: zookeeper-1
+
+        environment:
+            ZOOKEEPER_SERVER_ID: 1
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 10001
+            KAFKA_JMX_HOSTNAME: localhost
+            ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 2181:2181
+            - 10001:10001
+            - 10101:8091
+
+    zookeeper-2:
+        image: confluentinc/cp-zookeeper:7.9.0
+        hostname: zookeeper-2
+        container_name: zookeeper-2
+
+        environment:
+            ZOOKEEPER_SERVER_ID: 2
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 10002
+            KAFKA_JMX_HOSTNAME: localhost
+            ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 2182:2181
+            - 10002:10002
+            - 10102:8091
+
+
+    zookeeper-3:
+        image: confluentinc/cp-zookeeper:7.9.0
+        hostname: zookeeper-3
+        container_name: zookeeper-3
+
+        environment:
+            ZOOKEEPER_SERVER_ID: 3
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 10003
+            KAFKA_JMX_HOSTNAME: localhost
+            ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 2183:2181
+            - 10003:10003
+            - 10103:8091
+
+    kafka-1:
+        image: confluentinc/cp-server:7.9.0
+        hostname: kafka-1
+        container_name: kafka-1
+
+        healthcheck:
+            test: KAFKA_OPTS= /usr/bin/kafka-cluster cluster-id --bootstrap-server localhost:9091 || exit 1
+            interval: 10s
+            retries: 10
+            start_period: 20s
+        depends_on:
+            - zookeeper-1
+            - zookeeper-2
+            - zookeeper-3
+        environment:
+            KAFKA_LISTENERS: PLAINTEXT://kafka-1:19091, EXTERNAL://0.0.0.0:9091
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:19091, EXTERNAL://localhost:9091
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_JMX_PORT: 10004
+            KAFKA_JMX_HOSTNAME: localhost
+            KAFKA_BROKER_RACK: rack-1
+            KAFKA_MIN_INSYNC_REPLICAS: 2
+
+            KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 3
+            KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+            KAFKA_CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+            KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-1:19091,kafka-2:19092,kafka-3:19093
+
+            #KAFKA_REPLICA_SELECTOR_CLASS: org.apache.kafka.common.replica.RackAwareReplicaSelector
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 9091:9091
+            - 10004:10004
+            - 10104:8091
+            - 10201:8090
+
+    kafka-2:
+        image: confluentinc/cp-server:7.9.0
+        hostname: kafka-2
+        container_name: kafka-2
+
+        healthcheck:
+            test: KAFKA_OPTS= /usr/bin/kafka-cluster cluster-id --bootstrap-server localhost:9092 || exit 1
+            interval: 10s
+            retries: 10
+            start_period: 20s
+        depends_on:
+            - zookeeper-1
+            - zookeeper-2
+            - zookeeper-3
+        environment:
+            KAFKA_LISTENERS: PLAINTEXT://kafka-2:19092, EXTERNAL://0.0.0.0:9092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:19092, EXTERNAL://localhost:9092
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_JMX_PORT: 10005
+            KAFKA_JMX_HOSTNAME: localhost
+            KAFKA_BROKER_RACK: rack-2
+            KAFKA_MIN_INSYNC_REPLICAS: 2
+            KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 3
+            KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+            KAFKA_BROKER_ID: 2
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+            KAFKA_CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+            KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-1:19091,kafka-2:19092,kafka-3:19093
+
+            #KAFKA_REPLICA_SELECTOR_CLASS: org.apache.kafka.common.replica.RackAwareReplicaSelector
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 9092:9092
+            - 10005:10005
+            - 10105:8091
+            - 10202:8090
+
+    kafka-3:
+        image: confluentinc/cp-server:7.9.0
+        hostname: kafka-3
+        container_name: kafka-3
+
+        healthcheck:
+            test: KAFKA_OPTS= /usr/bin/kafka-cluster cluster-id --bootstrap-server localhost:9093 || exit 1
+            interval: 10s
+            retries: 10
+            start_period: 20s
+        depends_on:
+            - zookeeper-1
+            - zookeeper-2
+            - zookeeper-3
+        environment:
+            KAFKA_LISTENERS: PLAINTEXT://kafka-3:19093, EXTERNAL://0.0.0.0:9093
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:19093, EXTERNAL://localhost:9093
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+            KAFKA_JMX_PORT: 10006
+            KAFKA_JMX_HOSTNAME: localhost
+            KAFKA_BROKER_RACK: rack-3
+            KAFKA_MIN_INSYNC_REPLICAS: 2
+
+            KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 3
+            KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+            KAFKA_BROKER_ID: 3
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+            KAFKA_CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+            KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka-1:19091,kafka-2:19092,kafka-3:19093
+
+            #KAFKA_REPLICA_SELECTOR_CLASS: org.apache.kafka.common.replica.RackAwareReplicaSelector
+        cap_add:
+            - NET_ADMIN
+        ports:
+            - 9093:9093
+            - 10006:10006
+            - 10106:8091
+            - 10203:8090
+
