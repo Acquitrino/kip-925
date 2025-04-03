@@ -98,10 +98,14 @@ public class ProcessorApiStdoutApp {
         //props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_TAGS_CONFIG, "rack");
         //props.put(StreamsConfig.CLIENT_TAG_PREFIX, "rack="+CLIENT_RACK);
 
+        props.put("rack.aware.assignment.tags", "rack");
+        props.put("client.tag.rack", CLIENT_RACK);
 
+        //HA is the default...
         //props.put(StreamsConfig.TASK_ASSIGNOR_CLASS_CONFIG, "org.apache.kafka.streams.processor.internals.assignment.HighAvailabilityTaskAssignor");
-        props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_STRATEGY_CONFIG, "min_traffic");
-        props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_TRAFFIC_COST_CONFIG, "100");
+        props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_STRATEGY_CONFIG, "balance_subtopology");
+        //props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_STRATEGY_CONFIG, "min_traffic");
+        props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_TRAFFIC_COST_CONFIG, "1000");
         props.put(StreamsConfig.RACK_AWARE_ASSIGNMENT_NON_OVERLAP_COST_CONFIG, "1");
 
 
